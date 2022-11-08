@@ -21,6 +21,51 @@ public class LoginPage extends javax.swing.JFrame {
         initComponents();
     }
     
+    public int validarLogin() {
+        String email = txt_email.getText();
+        String senha = txt_senha.getText();
+        
+        if (email.equals("")) {
+            JOptionPane.showMessageDialog(this, "email inválido!");
+            return 0;
+        }
+        
+        if (senha.equals("")) {
+            JOptionPane.showMessageDialog(this, "senha inválida!");
+            return 0;
+        }
+        
+        return 1;
+    }
+    
+    public void login() {
+        String email = txt_email.getText();
+        String senha = txt_senha.getText();
+        
+        try {
+            Connection con = ConexaoBanco.getConnection();
+            
+            PreparedStatement pst = con.prepareStatement("select * from users where email = ? and password = ?");
+            pst.setString(1, email);
+            pst.setString(2, senha);
+            
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                JOptionPane.showMessageDialog(this, "login completo");
+                HomePage home = new HomePage();
+                home.setVisible(true);
+                this.dispose();
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "credenciais incorretas");
+            }
+              
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -189,6 +234,9 @@ public class LoginPage extends javax.swing.JFrame {
 
     private void rSMaterialButtonCircle2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rSMaterialButtonCircle2ActionPerformed
         // TODO add your handling code here:
+        if (validarLogin() == 1) {
+            login();
+        }
     }//GEN-LAST:event_rSMaterialButtonCircle2ActionPerformed
 
     private void rSMaterialButtonCircle3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rSMaterialButtonCircle3MouseClicked
