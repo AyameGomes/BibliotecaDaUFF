@@ -4,19 +4,144 @@
  */
 package jframe;
 
+import java.sql.*;
+import javax.swing.*;
+import java.util.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+
 /**
  *
  * @author ayame
  */
 public class ManageBooks extends javax.swing.JFrame {
 
-    /**
+    /** 
      * Creates new form ManageBooks
      */
+    private String nome;
+    private String autor;
+    private int id;
+    private int quant;
+    DefaultTableModel model;
+    
     public ManageBooks() {
         initComponents();
+        bookDetaisToTable();
+    }
+    
+    public void bookDetaisToTable() {
+        clearTable();
+        
+        try {
+            Connection con = ConexaoBanco.getConnection();
+            
+            Statement st = con.createStatement();
+            
+            ResultSet rs = st.executeQuery("select * from book_details");
+            
+            while(rs.next()) {
+                String bookId = rs.getString("id");
+                String bookName = rs.getString("name");
+                String bookAuthor = rs.getString("author");
+                int quantity = rs.getInt("quantity");
+                
+                Object[] obj = {bookId, bookName, bookAuthor, quantity};
+                
+                model = (DefaultTableModel) bookDetails.getModel();
+                model.addRow(obj);
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public int addBook() {
+        this.nome = book_title.getText();
+        this.autor = book_author.getText();
+        this.id = Integer.parseInt(book_id.getText());
+        this.quant = Integer.parseInt(book_quantity.getText());
+        
+        try {
+            Connection con = ConexaoBanco.getConnection();
+            
+            String query = "insert into book_details values(?, ?, ?, ?)";
+            PreparedStatement pst = con.prepareStatement(query);
+            pst.setInt(1, id);
+            pst.setString(2, nome);
+            pst.setString(3, autor);
+            pst.setInt(4, quant);
+            
+            int rowCount = pst.executeUpdate();
+            
+            if (rowCount > 0) {
+                return 1;
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return 0;
+    }
+    
+    public void clearTable() {
+        DefaultTableModel model = (DefaultTableModel) bookDetails.getModel();
+        model.setRowCount(0);
     }
 
+    public int updateBook() {
+        this.nome = book_title.getText();
+        this.autor = book_author.getText();
+        this.id = Integer.parseInt(book_id.getText());
+        this.quant = Integer.parseInt(book_quantity.getText());
+        
+        try {
+            Connection con = ConexaoBanco.getConnection();
+            
+            String query = "update book_details set name = ?, author = ?, quantity = ? where id = ?";
+            
+            PreparedStatement pst = con.prepareStatement(query);
+            pst.setString(1, nome);
+            pst.setString(2, autor);
+            pst.setInt(3, quant);
+            pst.setInt(4, id);
+            
+            int rowCount = pst.executeUpdate();
+            
+            if (rowCount > 0) {
+                return 1;
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return 0;
+    }
+    
+    public int deleteBook() {
+        this.id = Integer.parseInt(book_id.getText());
+        
+        try {
+            Connection con = ConexaoBanco.getConnection();
+            
+            String query = "delete from book_details where id = ?";
+            PreparedStatement pst = con.prepareStatement(query);
+            pst.setInt(1, id);
+            
+            int rowCount = pst.executeUpdate();
+            
+            if (rowCount > 0) {
+                return 1;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return 0;
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -38,7 +163,7 @@ public class ManageBooks extends javax.swing.JFrame {
         jLabel12 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         book_author = new app.bolivia.swing.JCTextField();
-        books_quantity = new app.bolivia.swing.JCTextField();
+        book_quantity = new app.bolivia.swing.JCTextField();
         rSMaterialButtonCircle3 = new rojerusan.RSMaterialButtonCircle();
         rSMaterialButtonCircle4 = new rojerusan.RSMaterialButtonCircle();
         rSMaterialButtonCircle6 = new rojerusan.RSMaterialButtonCircle();
@@ -46,7 +171,7 @@ public class ManageBooks extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jLabel13 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        rSTableMetro1 = new rojeru_san.complementos.RSTableMetro();
+        bookDetails = new rojeru_san.complementos.RSTableMetro();
         jLabel9 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -132,14 +257,14 @@ public class ManageBooks extends javax.swing.JFrame {
         book_author.setPlaceholder("Digite o nome do autor...");
         jPanel1.add(book_author, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 440, 300, -1));
 
-        books_quantity.setBackground(new java.awt.Color(255, 153, 0));
-        books_quantity.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 2, 0, new java.awt.Color(255, 255, 255)));
-        books_quantity.setForeground(new java.awt.Color(255, 255, 255));
-        books_quantity.setToolTipText("");
-        books_quantity.setName(""); // NOI18N
-        books_quantity.setPhColor(new java.awt.Color(255, 255, 255));
-        books_quantity.setPlaceholder("Digite a quantidade...");
-        jPanel1.add(books_quantity, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 560, 300, -1));
+        book_quantity.setBackground(new java.awt.Color(255, 153, 0));
+        book_quantity.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 2, 0, new java.awt.Color(255, 255, 255)));
+        book_quantity.setForeground(new java.awt.Color(255, 255, 255));
+        book_quantity.setToolTipText("");
+        book_quantity.setName(""); // NOI18N
+        book_quantity.setPhColor(new java.awt.Color(255, 255, 255));
+        book_quantity.setPlaceholder("Digite a quantidade...");
+        jPanel1.add(book_quantity, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 560, 300, -1));
 
         rSMaterialButtonCircle3.setBackground(new java.awt.Color(153, 0, 153));
         rSMaterialButtonCircle3.setText("remover");
@@ -205,34 +330,33 @@ public class ManageBooks extends javax.swing.JFrame {
         });
         jPanel2.add(jLabel13, new org.netbeans.lib.awtextra.AbsoluteConstraints(630, -20, 620, 110));
 
-        rSTableMetro1.setBackground(new java.awt.Color(240, 240, 240));
-        rSTableMetro1.setForeground(new java.awt.Color(255, 255, 255));
-        rSTableMetro1.setModel(new javax.swing.table.DefaultTableModel(
+        bookDetails.setBackground(new java.awt.Color(240, 240, 240));
+        bookDetails.setForeground(new java.awt.Color(255, 255, 255));
+        bookDetails.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {"23", "nome", "autor", "10"},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
                 "ID", "Título", "Autor", "Quantidade"
             }
         ));
-        rSTableMetro1.setColorBackgoundHead(new java.awt.Color(153, 0, 153));
-        rSTableMetro1.setColorBordeFilas(new java.awt.Color(255, 153, 0));
-        rSTableMetro1.setColorBordeHead(new java.awt.Color(153, 0, 153));
-        rSTableMetro1.setColorFilasBackgound1(new java.awt.Color(240, 240, 240));
-        rSTableMetro1.setColorFilasBackgound2(new java.awt.Color(240, 240, 240));
-        rSTableMetro1.setColorFilasForeground1(new java.awt.Color(0, 0, 0));
-        rSTableMetro1.setRowHeight(27);
-        jScrollPane1.setViewportView(rSTableMetro1);
-        if (rSTableMetro1.getColumnModel().getColumnCount() > 0) {
-            rSTableMetro1.getColumnModel().getColumn(0).setResizable(false);
-            rSTableMetro1.getColumnModel().getColumn(1).setResizable(false);
-            rSTableMetro1.getColumnModel().getColumn(3).setResizable(false);
+        bookDetails.setColorBackgoundHead(new java.awt.Color(153, 0, 153));
+        bookDetails.setColorBordeFilas(new java.awt.Color(255, 153, 0));
+        bookDetails.setColorBordeHead(new java.awt.Color(153, 0, 153));
+        bookDetails.setColorFilasBackgound1(new java.awt.Color(240, 240, 240));
+        bookDetails.setColorFilasBackgound2(new java.awt.Color(240, 240, 240));
+        bookDetails.setColorFilasForeground1(new java.awt.Color(0, 0, 0));
+        bookDetails.setRowHeight(27);
+        bookDetails.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                bookDetailsMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(bookDetails);
+        if (bookDetails.getColumnModel().getColumnCount() > 0) {
+            bookDetails.getColumnModel().getColumn(0).setResizable(false);
+            bookDetails.getColumnModel().getColumn(1).setResizable(false);
+            bookDetails.getColumnModel().getColumn(3).setResizable(false);
         }
 
         jPanel2.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 260, 720, 270));
@@ -263,6 +387,12 @@ public class ManageBooks extends javax.swing.JFrame {
 
     private void rSMaterialButtonCircle3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rSMaterialButtonCircle3ActionPerformed
         // TODO add your handling code here:
+        if (deleteBook() == 1) {
+            JOptionPane.showMessageDialog(this, "Removido com sucesso");
+            bookDetaisToTable();
+        } else {
+            JOptionPane.showMessageDialog(this, "Ocorreu um erro");
+        }
     }//GEN-LAST:event_rSMaterialButtonCircle3ActionPerformed
 
     private void rSMaterialButtonCircle4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rSMaterialButtonCircle4MouseClicked
@@ -271,6 +401,12 @@ public class ManageBooks extends javax.swing.JFrame {
 
     private void rSMaterialButtonCircle4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rSMaterialButtonCircle4ActionPerformed
         // TODO add your handling code here:
+        if (addBook() == 1) {
+            JOptionPane.showMessageDialog(this, "Adicionado com sucesso");
+            bookDetaisToTable();
+        } else {
+            JOptionPane.showMessageDialog(this, "Ocorreu um erro");
+        }
     }//GEN-LAST:event_rSMaterialButtonCircle4ActionPerformed
 
     private void rSMaterialButtonCircle6MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rSMaterialButtonCircle6MouseClicked
@@ -279,12 +415,29 @@ public class ManageBooks extends javax.swing.JFrame {
 
     private void rSMaterialButtonCircle6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rSMaterialButtonCircle6ActionPerformed
         // TODO add your handling code here:
+        if (updateBook() == 1) {
+            JOptionPane.showMessageDialog(this, "Atualizado com sucesso!");
+            bookDetaisToTable();
+        } else {
+            JOptionPane.showMessageDialog(this, "Ocorreu um erro");
+        }
     }//GEN-LAST:event_rSMaterialButtonCircle6ActionPerformed
 
     private void jLabel13MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel13MouseClicked
         // TODO add your handling code here:
         System.exit(0);
     }//GEN-LAST:event_jLabel13MouseClicked
+
+    private void bookDetailsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_bookDetailsMouseClicked
+        // TODO add your handling code here:
+        int no = bookDetails.getSelectedRow();
+        TableModel model = bookDetails.getModel();
+        
+        book_id.setText(model.getValueAt(no, 0).toString());
+        book_title.setText(model.getValueAt(no, 1).toString());
+        book_author.setText(model.getValueAt(no, 2).toString());
+        book_quantity.setText(model.getValueAt(no, 3).toString());
+    }//GEN-LAST:event_bookDetailsMouseClicked
 
     /**
      * @param args the command line arguments
@@ -322,10 +475,11 @@ public class ManageBooks extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private rojeru_san.complementos.RSTableMetro bookDetails;
     private app.bolivia.swing.JCTextField book_author;
     private app.bolivia.swing.JCTextField book_id;
+    private app.bolivia.swing.JCTextField book_quantity;
     private app.bolivia.swing.JCTextField book_title;
-    private app.bolivia.swing.JCTextField books_quantity;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -343,6 +497,5 @@ public class ManageBooks extends javax.swing.JFrame {
     private rojerusan.RSMaterialButtonCircle rSMaterialButtonCircle3;
     private rojerusan.RSMaterialButtonCircle rSMaterialButtonCircle4;
     private rojerusan.RSMaterialButtonCircle rSMaterialButtonCircle6;
-    private rojeru_san.complementos.RSTableMetro rSTableMetro1;
     // End of variables declaration//GEN-END:variables
 }
