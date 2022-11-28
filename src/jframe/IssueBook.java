@@ -34,9 +34,17 @@ public class IssueBook extends javax.swing.JFrame {
             
             ResultSet rs = pst.executeQuery();
             
-            while(rs.next()) {
+            if (rs.next()) {
                 user_id.setText(rs.getString("user_id"));
                 user_name.setText(rs.getString("name"));
+                
+                user_invalid.setText("");
+                
+            } else {
+                user_invalid.setText("Usuário inválido");
+                         
+                user_id.setText("");
+                user_name.setText("");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -53,11 +61,79 @@ public class IssueBook extends javax.swing.JFrame {
             
             ResultSet rs = pst.executeQuery();
             
-            while(rs.next()) {
+            if (rs.next()) {
                 book_id.setText(rs.getString("id"));
                 book_title.setText(rs.getString("name"));
                 book_author.setText(rs.getString("author"));
                 book_quantity.setText(rs.getString("quantity"));
+                
+                book_invalid.setText("");
+            } else {
+                book_invalid.setText("Livro inválido");
+                
+                book_id.setText("");
+                book_title.setText("");
+                book_author.setText("");
+                book_quantity.setText(""); 
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public int issueBook() {
+        int bookId = Integer.parseInt(txt_bookId.getText());
+        int userId = Integer.parseInt(txt_userId.getText());
+        String bookName = book_title.getText();
+        String userName = user_name.getText();
+        
+        java.util.Date uissueDate = issueDate.getDatoFecha();
+        java.util.Date udueDate = dueDate.getDatoFecha();
+        
+        java.sql.Date sissueDate = new java.sql.Date(uissueDate.getTime());
+        java.sql.Date sdueDate = new java.sql.Date(udueDate.getTime());
+        
+        try {
+            Connection con = ConexaoBanco.getConnection();
+            
+            String sql = "insert into issue_book_details(book_id, book_name, student_id, student_name, issue_date, due_date, status) values (?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement pst = con.prepareStatement(sql);
+            
+            pst.setInt(1, bookId);
+            pst.setString(2, bookName);
+            pst.setInt(3, userId);
+            pst.setString(4, userName);
+            pst.setDate(5, sissueDate);
+            pst.setDate(6, sdueDate);
+            pst.setString(7, "pending");
+            
+            int rowCount = pst.executeUpdate();
+            
+            if (rowCount > 0) {
+                return 1;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return 0;
+    }
+    
+    public void updateBookCount() {
+        int bookId = Integer.parseInt(txt_bookId.getText());
+        
+        try {
+            Connection con = ConexaoBanco.getConnection();
+            String sql = "update book_details set quantity = quantity - 1 where id = ?";
+            
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, bookId);
+            
+            int rowCount = pst.executeUpdate();
+            
+            if (rowCount > 0) {
+                int initialCount = Integer.parseInt(book_quantity.getText());
+                book_quantity.setText(Integer.toString(initialCount - 1));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -83,14 +159,16 @@ public class IssueBook extends javax.swing.JFrame {
         book_author = new app.bolivia.swing.JCTextField();
         jLabel17 = new javax.swing.JLabel();
         book_quantity = new app.bolivia.swing.JCTextField();
+        book_invalid = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jLabel13 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel21 = new javax.swing.JLabel();
         jLabel25 = new javax.swing.JLabel();
-        jLabel26 = new javax.swing.JLabel();
         user_id = new app.bolivia.swing.JCTextField();
         user_name = new app.bolivia.swing.JCTextField();
+        jLabel27 = new javax.swing.JLabel();
+        user_invalid = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
         txt_userId = new app.bolivia.swing.JCTextField();
         jLabel9 = new javax.swing.JLabel();
@@ -212,6 +290,12 @@ public class IssueBook extends javax.swing.JFrame {
         });
         jPanel1.add(book_quantity, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 460, 260, 30));
 
+        book_invalid.setBackground(new java.awt.Color(153, 0, 153));
+        book_invalid.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        book_invalid.setForeground(new java.awt.Color(153, 0, 153));
+        book_invalid.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jPanel1.add(book_invalid, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 490, 490, 50));
+
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 500, 830));
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
@@ -242,12 +326,6 @@ public class IssueBook extends javax.swing.JFrame {
         jLabel25.setText("ID:");
         jPanel3.add(jLabel25, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 200, 90, 110));
 
-        jLabel26.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel26.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel26.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel26.setText("Nome:");
-        jPanel3.add(jLabel26, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 270, 90, 110));
-
         user_id.setBackground(new java.awt.Color(153, 0, 153));
         user_id.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 2, 0, new java.awt.Color(255, 255, 255)));
         user_id.setForeground(new java.awt.Color(204, 153, 255));
@@ -277,6 +355,17 @@ public class IssueBook extends javax.swing.JFrame {
             }
         });
         jPanel3.add(user_name, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 310, 260, 30));
+
+        jLabel27.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel27.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel27.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel27.setText("Nome:");
+        jPanel3.add(jLabel27, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 270, 90, 110));
+
+        user_invalid.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        user_invalid.setForeground(new java.awt.Color(255, 153, 0));
+        user_invalid.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jPanel3.add(user_invalid, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 340, 490, 50));
 
         jPanel2.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 490, 830));
 
@@ -424,6 +513,16 @@ public class IssueBook extends javax.swing.JFrame {
 
     private void rSMaterialButtonCircle2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rSMaterialButtonCircle2ActionPerformed
         // TODO add your handling code here:
+        if (book_quantity.getText().equals("0")) {
+            JOptionPane.showMessageDialog(this, "Esse livro não está disponível!");
+        } else {
+            if (issueBook() == 1) {
+                JOptionPane.showMessageDialog(this, "Livro emprestado com sucesso!");
+                updateBookCount();
+            } else {
+                JOptionPane.showMessageDialog(this, "Ocorreu um erro.");
+            }
+        }
     }//GEN-LAST:event_rSMaterialButtonCircle2ActionPerformed
 
     private void txt_userIdFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txt_userIdFocusLost
@@ -487,6 +586,7 @@ public class IssueBook extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private app.bolivia.swing.JCTextField book_author;
     private app.bolivia.swing.JCTextField book_id;
+    private javax.swing.JLabel book_invalid;
     private app.bolivia.swing.JCTextField book_quantity;
     private app.bolivia.swing.JCTextField book_title;
     private rojeru_san.componentes.RSDateChooser dueDate;
@@ -506,7 +606,7 @@ public class IssueBook extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
-    private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -515,6 +615,7 @@ public class IssueBook extends javax.swing.JFrame {
     private app.bolivia.swing.JCTextField txt_bookId;
     private app.bolivia.swing.JCTextField txt_userId;
     private app.bolivia.swing.JCTextField user_id;
+    private javax.swing.JLabel user_invalid;
     private app.bolivia.swing.JCTextField user_name;
     // End of variables declaration//GEN-END:variables
 }
